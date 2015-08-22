@@ -66,8 +66,8 @@ func (b *Bridge) put(path string, body io.Reader) (*http.Response, error) {
 // the last scan.  returns the new lights, lastseen, and any error
 // that may have occured as per:
 // http://developers.meethue.com/1_lightsapi.html#12_get_new_lights
-func (self *Bridge) GetNewLights() ([]*Light, string, error) {
-	response, err := self.get("/lights/new")
+func (b *Bridge) GetNewLights() ([]*Light, string, error) {
+	response, err := b.get("/lights/new")
 	if err != nil {
 		return nil, "", err
 	}
@@ -98,9 +98,9 @@ func (self *Bridge) GetNewLights() ([]*Light, string, error) {
 	return lights, lastScan, nil
 }
 
-// FindLightById allows you to easily look up light if you know it's Id
-func (self *Bridge) FindLightByID(id string) (*Light, error) {
-	lights, err := self.GetAllLights()
+// FindLightByID allows you to easily look up light if you know it's Id
+func (b *Bridge) FindLightByID(id string) (*Light, error) {
+	lights, err := b.GetAllLights()
 	if err != nil {
 		return nil, err
 	}
