@@ -29,11 +29,11 @@ type BridgeLocator interface {
 }
 
 type localBridge struct {
-	Serial  string `json:"id"`
-	IpAddr  string `json:"internalipaddress"`
+	Serial string `json:"id"`
+	IPAddr string `json:"internalipaddress"`
 }
 
-func (self localBridge) CreateUser(deviceType string) (*Bridge, error) {
+func (b localBridge) CreateUser(deviceType string) (*Bridge, error) {
 	// construct our json params
 	params := map[string]string{"devicetype": deviceType}
 	data, err := json.Marshal(params)
@@ -42,7 +42,7 @@ func (self localBridge) CreateUser(deviceType string) (*Bridge, error) {
 	}
 
 	// create a new user
-	uri := fmt.Sprintf("http://%s/api", self.IpAddr)
+	uri := fmt.Sprintf("http://%s/api", b.IPAddr)
 	response, err := client.Post(uri, "text/json", bytes.NewReader(data))
 	if err != nil {
 		return nil, err
@@ -56,11 +56,11 @@ func (self localBridge) CreateUser(deviceType string) (*Bridge, error) {
 	username := value["success"]["username"]
 
 	// and create the new bridge object
-	return &Bridge{IpAddr: self.IpAddr, Username: username}, nil
+	return &Bridge{IPAddr: b.IPAddr, Username: username}, nil
 }
 
-func (self localBridge) Attach(username string) *Bridge {
-	return &Bridge{IpAddr: self.IpAddr, Username: username}
+func (b localBridge) Attach(username string) *Bridge {
+	return &Bridge{IPAddr: b.IPAddr, Username: username}
 }
 
 // DiscoverBridges is a two-step approach trying to find your hue bridges.
@@ -78,14 +78,14 @@ func DiscoverBridges(findAllBridges bool) ([]BridgeLocator, error) {
 	if err == nil {
 		conn.SetDeadline(time.Now().Add(3 * time.Second))
 		b := "M-SEARCH * HTTP/1.1\r\n" +
-				"HOST: 239.255.255.250:1900\r\n" +
-				"MAN: \"ssdp:discover\"\r\n" +
-				"MX: 3\r\n" +
-				"ST: go.hue:idl\r\n"
+			"HOST: 239.255.255.250:1900\r\n" +
+			"MAN: \"ssdp:discover\"\r\n" +
+			"MX: 3\r\n" +
+			"ST: go.hue:idl\r\n"
 
 		_, err := conn.WriteToUDP([]byte(b), &net.UDPAddr{IP: net.IPv4(239, 255, 255, 250), Port: 1900})
 		if err == nil {
-			var buf []byte = make([]byte, 8192)
+			var buf = make([]byte, 8192)
 			for {
 				_, addr, err := conn.ReadFromUDP(buf)
 				if err != nil {
@@ -95,7 +95,7 @@ func DiscoverBridges(findAllBridges bool) ([]BridgeLocator, error) {
 				// Since the hue responds 6 times via UDP, we need to filter out dupes
 				dupe := false
 				for _, v := range bridges {
-					if v.IpAddr == addr.IP.String() {
+					if v.IPAddr == addr.IP.String() {
 						dupe = true
 					}
 				}
@@ -107,14 +107,14 @@ func DiscoverBridges(findAllBridges bool) ([]BridgeLocator, error) {
 				if !strings.Contains(string(buf), "LOCATION: ") {
 					continue
 				}
-				var descUrl string
+				var descURL string
 				{
 					s := strings.SplitAfter(string(buf), "LOCATION: ")
-					descUrl = strings.Split(s[1], "\n")[0]
+					descURL = strings.Split(s[1], "\n")[0]
 				}
 
 				// Fetch description.xml from hue
-				response, err := http.Get(descUrl)
+				response, err := http.Get(descURL)
 				if err != nil {
 					continue
 				}
@@ -134,7 +134,7 @@ func DiscoverBridges(findAllBridges bool) ([]BridgeLocator, error) {
 				}
 				bridges = append(bridges, localBridge{
 					Serial: serial,
-					IpAddr: addr.IP.String(),
+					IPAddr: addr.IP.String(),
 				})
 				if !findAllBridges {
 					break

@@ -39,7 +39,7 @@ func TestSetName(t *testing.T) {
 
 func TestColorLoop(t *testing.T) {
 	bridge := NewBridge(host, username)
-	light, err := bridge.FindLightById("3")
+	light, err := bridge.FindLightByID("3")
 	if err != nil {
 		t.Fail()
 	}
@@ -53,7 +53,7 @@ func TestColorLoop(t *testing.T) {
 
 func TestOn(t *testing.T) {
 	bridge := NewBridge(host, username)
-	light, err := bridge.FindLightById("3")
+	light, err := bridge.FindLightByID("3")
 	if err != nil {
 		t.Fail()
 	}

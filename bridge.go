@@ -12,7 +12,7 @@ import (
 
 // Bridge is a representation of the Philips Hue bridge device.
 type Bridge struct {
-	IpAddr   string
+	IPAddr   string
 	Username string
 	debug    bool
 }
@@ -20,37 +20,38 @@ type Bridge struct {
 // NewBridge instantiates a bridge object.  Use this method when you already
 // know the ip address and username to use.  Saves the trouble of a lookup.
 func NewBridge(ipAddr, username string) *Bridge {
-	return &Bridge{IpAddr: ipAddr, Username: username}
+	return &Bridge{IPAddr: ipAddr, Username: username}
 }
 
-func (self *Bridge) Debug() *Bridge {
-	self.debug = true
-	return self
+// Debug sets the bridge debug mode on.
+func (b *Bridge) Debug() *Bridge {
+	b.debug = true
+	return b
 }
 
-func (self *Bridge) toUri(path string) string {
-	return fmt.Sprintf("http://%s/api/%s%s", self.IpAddr, self.Username, path)
+func (b *Bridge) toURI(path string) string {
+	return fmt.Sprintf("http://%s/api/%s%s", b.IPAddr, b.Username, path)
 }
 
-func (self *Bridge) get(path string) (*http.Response, error) {
-	uri := self.toUri(path)
-	if self.debug {
+func (b *Bridge) get(path string) (*http.Response, error) {
+	uri := b.toURI(path)
+	if b.debug {
 		log.Printf("GET %s\n", uri)
 	}
 	return client.Get(uri)
 }
 
-func (self *Bridge) post(path string, body io.Reader) (*http.Response, error) {
-	uri := self.toUri(path)
-	if self.debug {
+func (b *Bridge) post(path string, body io.Reader) (*http.Response, error) {
+	uri := b.toURI(path)
+	if b.debug {
 		log.Printf("POST %s\n", uri)
 	}
 	return client.Post(uri, "application/json", body)
 }
 
-func (self *Bridge) put(path string, body io.Reader) (*http.Response, error) {
-	uri := self.toUri(path)
-	if self.debug {
+func (b *Bridge) put(path string, body io.Reader) (*http.Response, error) {
+	uri := b.toURI(path)
+	if b.debug {
 		log.Printf("PUT %s\n", uri)
 	}
 	request, err := http.NewRequest("PUT", uri, body)
@@ -89,7 +90,7 @@ func (self *Bridge) GetNewLights() ([]*Light, string, error) {
 	for id, params := range results {
 		if id != "lastscan" {
 			value := params.(map[string]interface{})["name"]
-			light := &Light{Id: id, Name: value.(string)}
+			light := &Light{ID: id, Name: value.(string)}
 			lights = append(lights, light)
 		}
 	}
@@ -98,14 +99,14 @@ func (self *Bridge) GetNewLights() ([]*Light, string, error) {
 }
 
 // FindLightById allows you to easily look up light if you know it's Id
-func (self *Bridge) FindLightById(id string) (*Light, error) {
+func (self *Bridge) FindLightByID(id string) (*Light, error) {
 	lights, err := self.GetAllLights()
 	if err != nil {
 		return nil, err
 	}
 
 	for _, light := range lights {
-		if light.Id == id {
+		if light.ID == id {
 			return light, nil
 		}
 	}
@@ -115,8 +116,8 @@ func (self *Bridge) FindLightById(id string) (*Light, error) {
 
 // FindLightByName - similar to FindLightById, this is a convenience method
 // for when you already know the name of the light
-func (self *Bridge) FindLightByName(name string) (*Light, error) {
-	lights, err := self.GetAllLights()
+func (b *Bridge) FindLightByName(name string) (*Light, error) {
+	lights, err := b.GetAllLights()
 	if err != nil {
 		return nil, err
 	}
@@ -132,8 +133,8 @@ func (self *Bridge) FindLightByName(name string) (*Light, error) {
 
 // Search - for new lights as per
 // http://developers.meethue.com/1_lightsapi.html#13_search_for_new_lights
-func (self *Bridge) Search() ([]Result, error) {
-	response, err := self.post("/lights", nil)
+func (b *Bridge) Search() ([]Result, error) {
+	response, err := b.post("/lights", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -145,9 +146,9 @@ func (self *Bridge) Search() ([]Result, error) {
 }
 
 // GetAllLights - retrieves all lights the Hue is aware of
-func (self *Bridge) GetAllLights() ([]*Light, error) {
+func (b *Bridge) GetAllLights() ([]*Light, error) {
 	// fetch all the lights
-	response, err := self.get("/lights")
+	response, err := b.get("/lights")
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +164,7 @@ func (self *Bridge) GetAllLights() ([]*Light, error) {
 	// and convert them into lights
 	var lights []*Light
 	for id, params := range results {
-		light := Light{Id: id, Name: params.Name, bridge: self}
+		light := Light{ID: id, Name: params.Name, bridge: b}
 		lights = append(lights, &light)
 	}
 
