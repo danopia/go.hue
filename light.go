@@ -9,7 +9,7 @@ import (
 type Light struct {
 	ID     string
 	Name   string
-	bridge *Bridge
+	Bridge *Bridge
 }
 
 // LightState ...
@@ -103,7 +103,7 @@ type LightAttributes struct {
 // GetLightAttributes - retrieves light attributes and state as per
 // http://developers.meethue.com/1_lightsapi.html#14_get_light_attributes_and_state
 func (l *Light) GetLightAttributes() (*LightAttributes, error) {
-	response, err := l.bridge.get("/lights/" + l.ID)
+	response, err := l.Bridge.get("/lights/" + l.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +123,7 @@ func (l *Light) SetName(newName string) ([]Result, error) {
 		return nil, err
 	}
 
-	response, err := l.bridge.put("/lights/"+l.ID, bytes.NewReader(data))
+	response, err := l.Bridge.put("/lights/"+l.ID, bytes.NewReader(data))
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +167,7 @@ func (l *Light) SetState(state SetLightState) ([]Result, error) {
 		return nil, err
 	}
 
-	response, err := l.bridge.put("/lights/"+l.ID+"/state", bytes.NewReader(data))
+	response, err := l.Bridge.put("/lights/"+l.ID+"/state", bytes.NewReader(data))
 	if err != nil {
 		return nil, err
 	}

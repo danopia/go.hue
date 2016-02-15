@@ -164,7 +164,7 @@ func (b *Bridge) GetAllLights() ([]*Light, error) {
 	// and convert them into lights
 	var lights []*Light
 	for id, params := range results {
-		light := Light{ID: id, Name: params.Name, bridge: b}
+		light := Light{ID: id, Name: params.Name, Bridge: b}
 		lights = append(lights, &light)
 	}
 
